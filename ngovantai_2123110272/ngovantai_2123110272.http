@@ -1,0 +1,6 @@
+@ngovantai_2123110272_HostAddress = http://localhost:5244
+
+GET {{ngovantai_2123110272_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
