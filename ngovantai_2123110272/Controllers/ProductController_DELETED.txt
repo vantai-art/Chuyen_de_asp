@@ -1,0 +1,15 @@
+// ✅ FILE NÀY ĐÃ BỊ XÓA VÀ THAY THẾ BỞI FoodController.cs
+//
+// ProductController sử dụng namespace "ĐỒ_ÁN_CHUYÊN_ĐỀ_ASP.NET" không hợp lệ,
+// truy cập _context.Products không tồn tại trong AppDbContext,
+// và trùng chức năng hoàn toàn với FoodController.
+//
+// → Dùng FoodController.cs (api/food) thay thế.
+//    Các endpoint tương đương:
+//      GET    /api/food            (lấy tất cả, filter theo categoryId)
+//      GET    /api/food/{id}       (lấy theo id)
+//      GET    /api/food/available  (chỉ món đang phục vụ)
+//      POST   /api/food            (Admin - thêm mới)
+//      PUT    /api/food/{id}       (Admin - cập nhật)
+//      PATCH  /api/food/{id}/toggle (Admin - bật/tắt)
+//      DELETE /api/food/{id}       (Admin - xóa)

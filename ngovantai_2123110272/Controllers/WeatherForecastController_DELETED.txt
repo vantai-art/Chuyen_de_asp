@@ -1,0 +1,10 @@
+// ✅ FILE NÀY CÓ THỂ XÓA KHỎI DỰ ÁN
+//
+// WeatherForecastController và WeatherForecast.cs là code mẫu
+// tự động sinh ra khi tạo project ASP.NET mới, không liên quan
+// đến đồ án Quản lý Nhà hàng.
+//
+// Nếu giữ lại sẽ gây lỗi build vì namespace "ĐỒ_ÁN_CHUYÊN_ĐỀ_ASP.NET"
+// không hợp lệ sau khi đổi RootNamespace thành "RestaurantAPI".
+//
+// → XÓA cả WeatherForecastController.cs và WeatherForecast.cs khỏi project.
