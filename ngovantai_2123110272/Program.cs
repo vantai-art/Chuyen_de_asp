@@ -21,10 +21,10 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
+// ✅ PostgreSQL (thay SQL Server)
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        sql => sql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(30), null)
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection")
     ));
 
 // JWT Authentication
@@ -81,19 +81,19 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Restaurant API v1"));
-}
+// ✅ Swagger luôn bật kể cả production (để test trên Render)
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Restaurant API v1"));
 
-app.UseHttpsRedirection();
+// ✅ Bỏ UseHttpsRedirection vì Render tự xử lý HTTPS
+// app.UseHttpsRedirection();
+
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Auto migrate + seed
+// ✅ Auto migrate khi khởi động
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -108,4 +108,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Run();
+// ✅ Lấy PORT từ biến môi trường Render
+var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+app.Run($"http://0.0.0.0:{port}");
