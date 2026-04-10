@@ -135,4 +135,4 @@ using (var scope = app.Services.CreateScope())
 
 // --- 7. CHẠY APP ---
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
-app.Run($"http://0.0.0.0:{port}");
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
