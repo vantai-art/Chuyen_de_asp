@@ -7,29 +7,53 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Controllers + JSON
+// --- 1. XỬ LÝ CONNECTION STRING (RENDER POSTGRES VS LOCAL) ---
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+string connectionString;
+
+if (string.IsNullOrEmpty(databaseUrl))
+{
+    // Chạy ở Local (Lấy từ appsettings.json)
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+                       ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+}
+else
+{
+    // Chạy trên Render (Chuyển đổi từ postgres:// sang định dạng .NET)
+    var databaseUri = new Uri(databaseUrl);
+    var userInfo = databaseUri.UserInfo.Split(':');
+
+    connectionString = $"Host={databaseUri.Host};" +
+                       $"Port={databaseUri.Port};" +
+                       $"Database={databaseUri.AbsolutePath.TrimStart('/')};" +
+                       $"Username={userInfo[0]};" +
+                       $"Password={userInfo[1]};" +
+                       $"SSL Mode=Require;Trust Server Certificate=true;";
+}
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+
+// --- 2. CẤU HÌNH SERVICES ---
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     options.JsonSerializerOptions.WriteIndented = true;
 });
 
-// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
-// ✅ PostgreSQL (thay SQL Server)
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") 
-    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+// --- 3. JWT AUTHENTICATION ---
+// Sử dụng toán tử ?? để tránh lỗi null nếu chưa cấu hình biến môi trường
+var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Jwt:Key"] ?? "Your_Very_Long_Default_Secret_Key_For_Local_Only";
+var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? builder.Configuration["Jwt:Issuer"];
+var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? builder.Configuration["Jwt:Audience"];
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
-
-// JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"]!;
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -39,25 +63,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
     });
 
 builder.Services.AddAuthorization();
 
-// Swagger với JWT support
+// --- 4. SWAGGER ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Restaurant Management API",
-        Version = "v1",
-        Description = "API Quản lý Nhà hàng - ASP.NET Core .NET 8"
-    });
-
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Restaurant Management API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -65,9 +83,8 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Nhập: Bearer {token}"
+        Description = "Nhập theo định dạng: Bearer {your_token}"
     });
-
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -82,33 +99,40 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// ✅ Swagger luôn bật kể cả production (để test trên Render)
+// --- 5. PIPELINE CẤU HÌNH ---
+// Luôn bật Swagger trên Render để dễ dàng test API
 app.UseSwagger();
-app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Restaurant API v1"));
-
-// ✅ Bỏ UseHttpsRedirection vì Render tự xử lý HTTPS
-// app.UseHttpsRedirection();
+app.UseSwaggerUI(c => 
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Restaurant API v1");
+    c.RoutePrefix = string.Empty; // Truy cập Swagger ngay tại trang chủ (https://your-app.onrender.com/)
+});
 
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// ✅ Auto migrate khi khởi động
+// --- 6. TỰ ĐỘNG MIGRATION KHI STARTUP ---
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var services = scope.ServiceProvider;
     try
     {
-        db.Database.Migrate();
-        Console.WriteLine("✅ Database migration thành công!");
+        var context = services.GetRequiredService<AppDbContext>();
+        if (context.Database.IsRelational())
+        {
+            context.Database.Migrate();
+            Console.WriteLine("✅ Database migration thành công!");
+        }
     }
     catch (Exception ex)
     {
         Console.WriteLine($"❌ Lỗi migration: {ex.Message}");
+        // Bạn có thể chọn không throw lỗi để app vẫn khởi động được dù DB chưa sẵn sàng
     }
 }
 
-// ✅ Lấy PORT từ biến môi trường Render
+// --- 7. CHẠY APP ---
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 app.Run($"http://0.0.0.0:{port}");
