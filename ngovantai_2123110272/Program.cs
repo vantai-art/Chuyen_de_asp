@@ -7,19 +7,16 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. XỬ LÝ CONNECTION STRING (RENDER POSTGRES VS LOCAL) ---
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 string connectionString;
 
 if (string.IsNullOrEmpty(databaseUrl))
 {
-    // Chạy ở Local (Lấy từ appsettings.json)
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                       ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                       ?? throw new InvalidOperationException("Connection string not found.");
 }
 else
 {
-    // Chạy trên Render (Chuyển đổi từ postgres:// sang định dạng .NET)
     var databaseUri = new Uri(databaseUrl);
     var userInfo = databaseUri.UserInfo.Split(':');
 
@@ -34,8 +31,6 @@ else
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-
-// --- 2. CẤU HÌNH SERVICES ---
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
@@ -48,9 +43,7 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
-// --- 3. JWT AUTHENTICATION ---
-// Sử dụng toán tử ?? để tránh lỗi null nếu chưa cấu hình biến môi trường
-var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Jwt:Key"] ?? "Your_Very_Long_Default_Secret_Key_For_Local_Only";
+var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Jwt:Key"] ?? "Default_Secret_Key_123456789";
 var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? builder.Configuration["Jwt:Issuer"];
 var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? builder.Configuration["Jwt:Audience"];
 
@@ -71,11 +64,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// --- 4. SWAGGER ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Restaurant Management API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Restaurant API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -83,7 +75,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Nhập theo định dạng: Bearer {your_token}"
+        Description = "Bearer token"
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -99,13 +91,14 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// --- 5. PIPELINE CẤU HÌNH ---
-// Luôn bật Swagger trên Render để dễ dàng test API
+var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+app.Urls.Add($"http://0.0.0.0:{port}");
+
 app.UseSwagger();
-app.UseSwaggerUI(c => 
+app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Restaurant API v1");
-    c.RoutePrefix = string.Empty; // Truy cập Swagger ngay tại trang chủ (https://your-app.onrender.com/)
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
+    c.RoutePrefix = string.Empty;
 });
 
 app.UseCors("AllowAll");
@@ -113,26 +106,21 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// --- 6. TỰ ĐỘNG MIGRATION KHI STARTUP ---
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
     try
     {
-        var context = services.GetRequiredService<AppDbContext>();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         if (context.Database.IsRelational())
         {
             context.Database.Migrate();
-            Console.WriteLine("✅ Database migration thành công!");
+            Console.WriteLine("Migration success");
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Lỗi migration: {ex.Message}");
-        // Bạn có thể chọn không throw lỗi để app vẫn khởi động được dù DB chưa sẵn sàng
+        Console.WriteLine("Migration error: " + ex.Message);
     }
 }
 
-// --- 7. CHẠY APP ---
-var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+app.Run();
