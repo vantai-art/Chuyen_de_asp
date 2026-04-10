@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RestaurantAPI.Data;
+using RestaurantAPI.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -103,7 +104,7 @@ using (var scope = app.Services.CreateScope())
             new Food { Name = "Kem", Price = 30000, CategoryId = catDessert.Id }
         };
 
-        context.Foods.AddRange(foods);
+        context.Foods.AddRange(foods.ToArray());
         context.SaveChanges();
 
         var admin = new User { Username = "admin", Password = "123456", Role = "Admin" };
