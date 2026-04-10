@@ -43,21 +43,17 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
-var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Jwt:Key"] ?? "Default_Secret_Key_123456789";
-var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? builder.Configuration["Jwt:Issuer"];
-var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? builder.Configuration["Jwt:Audience"];
+var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? "Default_Secret_Key_123456789";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
+            ValidateIssuer = false,
+            ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtIssuer,
-            ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
     });
@@ -65,29 +61,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Restaurant API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Bearer token"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
@@ -97,7 +71,6 @@ app.Urls.Add($"http://0.0.0.0:{port}");
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
     c.RoutePrefix = string.Empty;
 });
 
@@ -106,20 +79,65 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+
+// 🔥🔥🔥 SEED DATA ĐẶT Ở ĐÂY (QUAN TRỌNG) 🔥🔥🔥
 using (var scope = app.Services.CreateScope())
 {
-    try
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    if (!context.Categories.Any())
     {
-        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        if (context.Database.IsRelational())
+        var catFood = new Category { Name = "Đồ ăn" };
+        var catDrink = new Category { Name = "Đồ uống" };
+        var catDessert = new Category { Name = "Tráng miệng" };
+
+        context.Categories.AddRange(catFood, catDrink, catDessert);
+        context.SaveChanges();
+
+        var foods = new List<Food>
         {
-            //context.Database.Migrate();
-            Console.WriteLine("Migration success");
-        }
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine("Migration error: " + ex.Message);
+            new Food { Name = "Pizza", Price = 120000, CategoryId = catFood.Id },
+            new Food { Name = "Burger", Price = 80000, CategoryId = catFood.Id },
+            new Food { Name = "Trà sữa", Price = 40000, CategoryId = catDrink.Id },
+            new Food { Name = "Coca Cola", Price = 20000, CategoryId = catDrink.Id },
+            new Food { Name = "Kem", Price = 30000, CategoryId = catDessert.Id }
+        };
+
+        context.Foods.AddRange(foods);
+        context.SaveChanges();
+
+        var admin = new User { Username = "admin", Password = "123456", Role = "Admin" };
+        var customer = new User { Username = "customer", Password = "123456", Role = "Customer" };
+
+        context.Users.AddRange(admin, customer);
+        context.SaveChanges();
+
+        var table1 = new Table { Name = "Bàn 1", Status = "Trống" };
+        var table2 = new Table { Name = "Bàn 2", Status = "Trống" };
+
+        context.Tables.AddRange(table1, table2);
+        context.SaveChanges();
+
+        var order = new Order
+        {
+            UserId = customer.Id,
+            TableId = table1.Id,
+            TotalAmount = 200000,
+            Status = "Completed"
+        };
+
+        context.Orders.Add(order);
+        context.SaveChanges();
+
+        context.OrderDetails.Add(new OrderDetail
+        {
+            OrderId = order.Id,
+            FoodId = foods[0].Id,
+            Quantity = 1,
+            Price = foods[0].Price
+        });
+
+        context.SaveChanges();
     }
 }
 
