@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using RestaurantAPI.Data;
 using RestaurantAPI.Models;
 using System.Text;
@@ -35,7 +34,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-    options.JsonSerializerOptions.WriteIndented = true;
 });
 
 builder.Services.AddCors(options =>
@@ -44,12 +42,12 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
-var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? "Default_Secret_Key_123456789";
+var jwtKey = "Default_Secret_Key_123456789";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        options.TokenValidationParameters = new()
         {
             ValidateIssuer = false,
             ValidateAudience = false,
@@ -60,20 +58,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
-app.Urls.Add($"http://0.0.0.0:{port}");
+app.Urls.Add($"http://0.0.0.0:{Environment.GetEnvironmentVariable("PORT") ?? "10000"}");
 
 app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.RoutePrefix = string.Empty;
-});
+app.UseSwaggerUI(c => c.RoutePrefix = "");
 
 app.UseCors("AllowAll");
 app.UseAuthentication();
@@ -81,7 +74,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 
-// 🔥🔥🔥 SEED DATA ĐẶT Ở ĐÂY (QUAN TRỌNG) 🔥🔥🔥
+// 🔥 SEED DATA
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -90,39 +83,53 @@ using (var scope = app.Services.CreateScope())
     {
         var catFood = new Category { Name = "Đồ ăn" };
         var catDrink = new Category { Name = "Đồ uống" };
-        var catDessert = new Category { Name = "Tráng miệng" };
 
-        context.Categories.AddRange(catFood, catDrink, catDessert);
+        context.Categories.AddRange(catFood, catDrink);
         context.SaveChanges();
 
-        var foods = new List<Food>
+        var food1 = new Food
         {
-            new Food { Name = "Pizza", Price = 120000, CategoryId = catFood.Id },
-            new Food { Name = "Burger", Price = 80000, CategoryId = catFood.Id },
-            new Food { Name = "Trà sữa", Price = 40000, CategoryId = catDrink.Id },
-            new Food { Name = "Coca Cola", Price = 20000, CategoryId = catDrink.Id },
-            new Food { Name = "Kem", Price = 30000, CategoryId = catDessert.Id }
+            Name = "Pizza",
+            Description = "Pizza phô mai",
+            Price = 120000,
+            CategoryId = catFood.Id
         };
 
-        context.Foods.AddRange(foods.ToArray());
+        var food2 = new Food
+        {
+            Name = "Trà sữa",
+            Description = "Trà sữa",
+            Price = 40000,
+            CategoryId = catDrink.Id
+        };
+
+        context.Foods.AddRange(food1, food2);
         context.SaveChanges();
 
-        var admin = new User { Username = "admin", Password = "123456", Role = "Admin" };
-        var customer = new User { Username = "customer", Password = "123456", Role = "Customer" };
+        var user = new User
+        {
+            Username = "admin",
+            PasswordHash = "123456",
+            Role = "Admin"
+        };
 
-        context.Users.AddRange(admin, customer);
+        context.Users.Add(user);
         context.SaveChanges();
 
-        var table1 = new Table { Name = "Bàn 1", Status = "Trống" };
-        var table2 = new Table { Name = "Bàn 2", Status = "Trống" };
+        var table = new Table
+        {
+            TableNumber = "Bàn 1",
+            Capacity = 4
+        };
 
-        context.Tables.AddRange(table1, table2);
+        context.Tables.Add(table);
         context.SaveChanges();
 
         var order = new Order
         {
-            UserId = customer.Id,
-            TableId = table1.Id,
+            OrderCode = "ORD001",
+            TableId = table.Id,
+            StaffId = user.Id,
             TotalAmount = 200000,
             Status = "Completed"
         };
@@ -133,9 +140,9 @@ using (var scope = app.Services.CreateScope())
         context.OrderDetails.Add(new OrderDetail
         {
             OrderId = order.Id,
-            FoodId = foods[0].Id,
-            Quantity = 1,
-            Price = foods[0].Price
+            FoodId = food1.Id,
+            Quantity = 2,
+            UnitPrice = food1.Price
         });
 
         context.SaveChanges();
