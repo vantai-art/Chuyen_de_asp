@@ -19,7 +19,7 @@ else
 {
     var databaseUri = new Uri(databaseUrl);
     var userInfo = databaseUri.UserInfo.Split(':');
-
+    var port = databaseUri.Port > 0 ? databaseUri.Port : 5432;
     connectionString = $"Host={databaseUri.Host};" +
                        $"Port={databaseUri.Port};" +
                        $"Database={databaseUri.AbsolutePath.TrimStart('/')};" +
