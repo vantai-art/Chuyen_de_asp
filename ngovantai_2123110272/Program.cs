@@ -173,7 +173,7 @@ using (var scope = app.Services.CreateScope())
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         if (context.Database.IsRelational())
         {
-            // context.Database.Migrate();
+            context.Database.Migrate(); // ✅ uncommented
             Console.WriteLine("Migration success");
         }
     }
