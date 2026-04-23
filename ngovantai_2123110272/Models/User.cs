@@ -16,7 +16,7 @@ namespace RestaurantAPI.Models
 
         [Required]
         [StringLength(50)]
-        public string Role { get; set; } = "Staff"; // Admin | Staff
+        public string Role { get; set; } = "Customer";
 
         [StringLength(200)]
         public string? FullName { get; set; }
