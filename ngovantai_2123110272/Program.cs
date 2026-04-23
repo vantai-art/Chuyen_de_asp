@@ -124,30 +124,35 @@ var app = builder.Build();
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 app.Urls.Add($"http://0.0.0.0:{port}");
 
-// ✅ QUAN TRỌNG: Middleware order đúng
-app.UseRouting();
-
-// ✅ CORS phải đặt sau UseRouting và trước Authentication
-app.UseCors("AllowReactApp");
-
-// ✅ Xử lý OPTIONS preflight requests
+// ✅ OPTIONS preflight phải đặt TRƯỚC tất cả middleware khác
 app.Use(async (context, next) =>
 {
     if (context.Request.Method == "OPTIONS")
     {
-        context.Response.Headers.Add("Access-Control-Allow-Origin",
-            context.Request.Headers["Origin"].ToString());
-        context.Response.Headers.Add("Access-Control-Allow-Methods",
-            "GET, POST, PUT, DELETE, OPTIONS, PATCH");
-        context.Response.Headers.Add("Access-Control-Allow-Headers",
-            "Content-Type, Authorization, X-Requested-With");
-        context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
-        context.Response.StatusCode = 200;
+        var origin = context.Request.Headers["Origin"].ToString();
+        var allowedOrigins = new[] {
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "https://fe-asp-net.onrender.com"
+        };
+        if (allowedOrigins.Contains(origin))
+        {
+            context.Response.Headers["Access-Control-Allow-Origin"] = origin;
+            context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
+            context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With";
+            context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+        }
+        context.Response.StatusCode = 204;
         await context.Response.CompleteAsync();
         return;
     }
     await next();
 });
+
+app.UseRouting();
+
+// ✅ CORS sau UseRouting
+app.UseCors("AllowReactApp");
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
