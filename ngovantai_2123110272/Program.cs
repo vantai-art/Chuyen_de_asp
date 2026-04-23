@@ -17,14 +17,22 @@ if (string.IsNullOrEmpty(databaseUrl))
 }
 else
 {
+    // Hỗ trợ cả 2 format:
+    // postgres://user:pass@host:port/dbname
+    // postgresql://user:pass@host:port/dbname
     var databaseUri = new Uri(databaseUrl);
     var userInfo = databaseUri.UserInfo.Split(':');
+    var dbHost = databaseUri.Host;
+    var dbPort = databaseUri.Port > 0 ? databaseUri.Port : 5432;
+    var dbName = databaseUri.AbsolutePath.TrimStart('/');
+    var dbUser = Uri.UnescapeDataString(userInfo[0]);
+    var dbPass = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
 
-    connectionString = $"Host={databaseUri.Host};" +
-                       $"Port={databaseUri.Port};" +
-                       $"Database={databaseUri.AbsolutePath.TrimStart('/')};" +
-                       $"Username={userInfo[0]};" +
-                       $"Password={userInfo[1]};" +
+    connectionString = $"Host={dbHost};" +
+                       $"Port={dbPort};" +
+                       $"Database={dbName};" +
+                       $"Username={dbUser};" +
+                       $"Password={dbPass};" +
                        $"SSL Mode=Require;Trust Server Certificate=true;";
 }
 
