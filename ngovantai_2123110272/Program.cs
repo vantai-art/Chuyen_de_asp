@@ -7,6 +7,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Database connection
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 string connectionString;
 
@@ -17,9 +18,6 @@ if (string.IsNullOrEmpty(databaseUrl))
 }
 else
 {
-    // Hỗ trợ cả 2 format:
-    // postgres://user:pass@host:port/dbname
-    // postgresql://user:pass@host:port/dbname
     var databaseUri = new Uri(databaseUrl);
     var userInfo = databaseUri.UserInfo.Split(':');
     var dbHost = databaseUri.Host;
@@ -45,17 +43,21 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.WriteIndented = true;
 });
 
-// ✅ CORS: cho phép tất cả origin (bao gồm localhost:3000)
+// ✅ FIXED CORS - Cho phép localhost:3000
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-        policy
-            .SetIsOriginAllowed(_ => true)   // cho phép mọi origin
+    options.AddPolicy("AllowReactApp", policy =>
+        policy.WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "https://chuyen-de-asp.onrender.com" // frontend domain nếu có
+            )
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials());
 });
 
+// JWT Configuration
 var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Jwt:Key"] ?? "Default_Secret_Key_123456789";
 var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? builder.Configuration["Jwt:Issuer"];
 var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? builder.Configuration["Jwt:Audience"];
@@ -72,6 +74,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+
+        // Cho phép token từ query string (signalR, etc)
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -107,8 +124,30 @@ var app = builder.Build();
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 app.Urls.Add($"http://0.0.0.0:{port}");
 
-// ✅ Thứ tự ĐÚNG: CORS phải đứng ĐẦU TIÊN trước tất cả middleware khác
-app.UseCors("AllowAll");
+// ✅ QUAN TRỌNG: Middleware order đúng
+app.UseRouting();
+
+// ✅ CORS phải đặt sau UseRouting và trước Authentication
+app.UseCors("AllowReactApp");
+
+// ✅ Xử lý OPTIONS preflight requests
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.Headers.Add("Access-Control-Allow-Origin",
+            context.Request.Headers["Origin"].ToString());
+        context.Response.Headers.Add("Access-Control-Allow-Methods",
+            "GET, POST, PUT, DELETE, OPTIONS, PATCH");
+        context.Response.Headers.Add("Access-Control-Allow-Headers",
+            "Content-Type, Authorization, X-Requested-With");
+        context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
+        context.Response.StatusCode = 200;
+        await context.Response.CompleteAsync();
+        return;
+    }
+    await next();
+});
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -121,6 +160,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+// Database migration
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -128,7 +168,7 @@ using (var scope = app.Services.CreateScope())
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         if (context.Database.IsRelational())
         {
-            //context.Database.Migrate();
+            // context.Database.Migrate();
             Console.WriteLine("Migration success");
         }
     }
