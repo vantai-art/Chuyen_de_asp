@@ -37,10 +37,15 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.WriteIndented = true;
 });
 
+// ✅ CORS: cho phép tất cả origin (bao gồm localhost:3000)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+        policy
+            .SetIsOriginAllowed(_ => true)   // cho phép mọi origin
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials());
 });
 
 var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Jwt:Key"] ?? "Default_Secret_Key_123456789";
@@ -94,6 +99,9 @@ var app = builder.Build();
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 app.Urls.Add($"http://0.0.0.0:{port}");
 
+// ✅ Thứ tự ĐÚNG: CORS phải đứng ĐẦU TIÊN trước tất cả middleware khác
+app.UseCors("AllowAll");
+
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -101,7 +109,6 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = string.Empty;
 });
 
-app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
