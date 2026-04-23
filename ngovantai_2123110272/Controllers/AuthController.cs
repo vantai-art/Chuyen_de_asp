@@ -45,10 +45,46 @@ namespace RestaurantAPI.Controllers
             });
         }
 
-        // POST: api/auth/register  (Admin only - tạo tài khoản nhân viên)
+        // POST: api/auth/register  (User tự đăng ký - role mặc định là Customer)
         [HttpPost("register")]
-        [Authorize(Roles = "Admin")]
+        [AllowAnonymous]
         public async Task<ActionResult> Register([FromBody] RegisterDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var exists = await _context.Users.AnyAsync(u => u.Username == dto.Username);
+            if (exists)
+                return BadRequest(new { message = "Username đã tồn tại" });
+
+            // Nếu không phải Admin gọi → luôn là Customer
+            // Nếu là Admin gọi → cho phép chỉ định role Staff hoặc Admin
+            string role = "Customer";
+            var callerRole = User.FindFirstValue(ClaimTypes.Role);
+            if (callerRole == "Admin" && (dto.Role == "Admin" || dto.Role == "Staff"))
+            {
+                role = dto.Role;
+            }
+
+            var user = new User
+            {
+                Username = dto.Username,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Role = role,
+                FullName = dto.FullName,
+                CreatedAt = DateTime.Now,
+                IsActive = true
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Đăng ký tài khoản thành công", userId = user.Id });
+        }
+
+        // POST: api/auth/register-staff  (Admin only - tạo tài khoản nhân viên/admin)
+        [HttpPost("register-staff")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> RegisterStaff([FromBody] RegisterDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -69,7 +105,7 @@ namespace RestaurantAPI.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Tạo tài khoản thành công", userId = user.Id });
+            return Ok(new { message = "Tạo tài khoản nhân viên thành công", userId = user.Id });
         }
 
         // GET: api/auth/me
@@ -83,7 +119,7 @@ namespace RestaurantAPI.Controllers
             return Ok(new { user.Id, user.Username, user.Role, user.FullName });
         }
 
-        // GET: api/auth/users  (Admin - danh sách nhân viên)
+        // GET: api/auth/users  (Admin - danh sách người dùng)
         [HttpGet("users")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> GetUsers()
@@ -114,7 +150,7 @@ namespace RestaurantAPI.Controllers
 
         private string GenerateToken(User user)
         {
-            var jwtKey = _config["Jwt:Key"]!;
+            var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? _config["Jwt:Key"]!;
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -126,9 +162,12 @@ namespace RestaurantAPI.Controllers
                 new Claim("FullName", user.FullName ?? "")
             };
 
+            var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? _config["Jwt:Issuer"];
+            var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? _config["Jwt:Audience"];
+
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
+                issuer: jwtIssuer,
+                audience: jwtAudience,
                 claims: claims,
                 expires: DateTime.Now.AddHours(8),
                 signingCredentials: creds
