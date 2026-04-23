@@ -24,7 +24,7 @@ namespace RestaurantAPI.DTOs
         [StringLength(200)]
         public string? FullName { get; set; }
 
-        public string Role { get; set; } = "Staff"; // Admin | Staff
+        public string Role { get; set; } = ""; // Để trống, controller sẽ tự set Customer cho user thường
     }
 
     public class AuthResponseDto
