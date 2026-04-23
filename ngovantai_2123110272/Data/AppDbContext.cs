@@ -144,10 +144,10 @@ namespace RestaurantAPI.Data
             });
 
             // ===== SEED DATA =====
-            modelBuilder.Entity<User>().HasData(
-                new User { Id = 1, Username = "admin", PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"), Role = "Admin", FullName = "Quản trị viên", CreatedAt = new DateTime(2025, 1, 1), IsActive = true },
-                new User { Id = 2, Username = "staff1", PasswordHash = BCrypt.Net.BCrypt.HashPassword("staff123"), Role = "Staff", FullName = "Nhân viên 1", CreatedAt = new DateTime(2025, 1, 1), IsActive = true }
-            );
+            //modelBuilder.Entity<User>().HasData(
+            //    new User { Id = 1, Username = "admin", PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"), Role = "Admin", FullName = "Quản trị viên", CreatedAt = new DateTime(2025, 1, 1), IsActive = true },
+            //    new User { Id = 2, Username = "staff1", PasswordHash = BCrypt.Net.BCrypt.HashPassword("staff123"), Role = "Staff", FullName = "Nhân viên 1", CreatedAt = new DateTime(2025, 1, 1), IsActive = true }
+            //);
 
             modelBuilder.Entity<Category>().HasData(
                 new Category { Id = 1, Name = "Khai vị", Description = "Các món ăn khai vị" },
