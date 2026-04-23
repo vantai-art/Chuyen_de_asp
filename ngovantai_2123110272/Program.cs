@@ -50,7 +50,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
                 "http://localhost:3000",
                 "http://localhost:3001",
-                "https://chuyen-de-asp.onrender.com" // frontend domain nếu có
+                "https://fe-asp-net.onrender.com"
             )
             .AllowAnyMethod()
             .AllowAnyHeader()
