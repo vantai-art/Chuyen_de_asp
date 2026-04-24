@@ -172,7 +172,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 // ========================================================
-// DATABASE MIGRATION - sau khi pipeline xong, trước app.Run()
+// DATABASE MIGRATION + SEED ADMIN
 // ========================================================
 using (var scope = app.Services.CreateScope())
 {
@@ -184,11 +184,30 @@ using (var scope = app.Services.CreateScope())
             dbContext.Database.Migrate();
             Console.WriteLine("Migration success");
         }
+
+        // Seed admin - chỉ tạo nếu chưa có, an toàn khi restart nhiều lần
+        if (!dbContext.Users.Any(u => u.Username == "admin"))
+        {
+            dbContext.Users.Add(new RestaurantAPI.Models.User
+            {
+                Username = "admin",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                Role = "Admin",
+                FullName = "Quan tri vien",
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true
+            });
+            dbContext.SaveChanges();
+            Console.WriteLine("Seed admin OK — admin / Admin@123");
+        }
+        else
+        {
+            Console.WriteLine("Admin da ton tai, bo qua seed.");
+        }
     }
     catch (Exception ex)
     {
-        // Log nhưng không crash app - DB có thể đã được migrate rồi
-        Console.WriteLine("Migration warning: " + ex.Message);
+        Console.WriteLine("Migration/Seed warning: " + ex.Message);
     }
 }
 

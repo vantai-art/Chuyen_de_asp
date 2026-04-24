@@ -24,12 +24,13 @@ namespace RestaurantAPI.DTOs
         [StringLength(200)]
         public string? FullName { get; set; }
 
-        // Frontend gửi email/phone nhưng User model chưa có → nhận vào rồi ignore
-        // Sau này có thể thêm vào User model nếu cần
+        [StringLength(200)]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
         public string? Email { get; set; }
+
+        [StringLength(20)]
         public string? Phone { get; set; }
 
-        // Không set default "Staff" nữa - controller tự xử lý
         public string? Role { get; set; }
     }
 
@@ -39,6 +40,8 @@ namespace RestaurantAPI.DTOs
         public string Username { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
         public string? FullName { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
         public int UserId { get; set; }
     }
 }

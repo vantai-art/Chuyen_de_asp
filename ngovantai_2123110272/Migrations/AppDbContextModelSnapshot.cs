@@ -23,836 +23,844 @@ namespace RestaurantAPI.Migrations
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("RestaurantAPI.Models.Category", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                b.Property<string>("Description")
+                    .HasMaxLength(500)
+                    .HasColumnType("character varying(500)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("character varying(100)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Category_Name_Unique");
+                b.HasIndex("Name")
+                    .IsUnique()
+                    .HasDatabaseName("IX_Category_Name_Unique");
 
-                    b.ToTable("Categories");
+                b.ToTable("Categories");
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "Các món ăn khai vị",
-                            Name = "Khai vị"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "Các món ăn chính",
-                            Name = "Món chính"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Description = "Các món tráng miệng",
-                            Name = "Tráng miệng"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Description = "Nước uống các loại",
-                            Name = "Đồ uống"
-                        });
-                });
+                b.HasData(
+                    new
+                    {
+                        Id = 1,
+                        Description = "Các món ăn khai vị",
+                        Name = "Khai vị"
+                    },
+                    new
+                    {
+                        Id = 2,
+                        Description = "Các món ăn chính",
+                        Name = "Món chính"
+                    },
+                    new
+                    {
+                        Id = 3,
+                        Description = "Các món tráng miệng",
+                        Name = "Tráng miệng"
+                    },
+                    new
+                    {
+                        Id = 4,
+                        Description = "Nước uống các loại",
+                        Name = "Đồ uống"
+                    });
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Food", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer");
+                b.Property<int>("CategoryId")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                b.Property<string>("Description")
+                    .IsRequired()
+                    .HasMaxLength(1000)
+                    .HasColumnType("character varying(1000)");
 
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("ImageUrl")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsAvailable")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasMaxLength(200)
+                    .HasColumnType("character varying(200)");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                b.Property<decimal>("Price")
+                    .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
+                b.HasIndex("CategoryId");
 
-                    b.HasIndex("Name")
-                        .HasDatabaseName("IX_Food_Name");
+                b.HasIndex("Name")
+                    .HasDatabaseName("IX_Food_Name");
 
-                    b.ToTable("Foods");
+                b.ToTable("Foods");
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CategoryId = 1,
-                            Description = "Gỏi cuốn tươi nhân tôm thịt",
-                            ImageUrl = "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=400",
-                            IsAvailable = true,
-                            Name = "Gỏi cuốn tôm thịt",
-                            Price = 45000m
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CategoryId = 1,
-                            Description = "Chả giò giòn tan, nhân thịt heo",
-                            ImageUrl = "https://images.unsplash.com/photo-1529693662653-9d480da3337e?w=400",
-                            IsAvailable = true,
-                            Name = "Chả giò chiên",
-                            Price = 55000m
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CategoryId = 2,
-                            Description = "Cơm tấm sườn nướng than hoa",
-                            ImageUrl = "https://images.unsplash.com/photo-1516714435131-44d6b64dc6a2?w=400",
-                            IsAvailable = true,
-                            Name = "Cơm sườn nướng",
-                            Price = 75000m
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CategoryId = 2,
-                            Description = "Phở bò truyền thống tái nạm",
-                            ImageUrl = "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=400",
-                            IsAvailable = true,
-                            Name = "Phở bò tái nạm",
-                            Price = 70000m
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CategoryId = 2,
-                            Description = "Bún bò Huế cay đặc trưng miền Trung",
-                            ImageUrl = "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400",
-                            IsAvailable = true,
-                            Name = "Bún bò Huế",
-                            Price = 65000m
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CategoryId = 3,
-                            Description = "Chè đậu xanh, đỏ, thạch rau câu",
-                            ImageUrl = "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400",
-                            IsAvailable = true,
-                            Name = "Chè ba màu",
-                            Price = 35000m
-                        },
-                        new
-                        {
-                            Id = 7,
-                            CategoryId = 4,
-                            Description = "Cà phê phin truyền thống với sữa đặc",
-                            ImageUrl = "https://images.unsplash.com/photo-1551030173-122aabc4489c?w=400",
-                            IsAvailable = true,
-                            Name = "Cà phê sữa đá",
-                            Price = 30000m
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CategoryId = 4,
-                            Description = "Chanh tươi ép lạnh",
-                            ImageUrl = "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400",
-                            IsAvailable = true,
-                            Name = "Nước chanh ép",
-                            Price = 25000m
-                        });
-                });
+                b.HasData(
+                    new
+                    {
+                        Id = 1,
+                        CategoryId = 1,
+                        Description = "Gỏi cuốn tươi nhân tôm thịt",
+                        ImageUrl = "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=400",
+                        IsAvailable = true,
+                        Name = "Gỏi cuốn tôm thịt",
+                        Price = 45000m
+                    },
+                    new
+                    {
+                        Id = 2,
+                        CategoryId = 1,
+                        Description = "Chả giò giòn tan, nhân thịt heo",
+                        ImageUrl = "https://images.unsplash.com/photo-1529693662653-9d480da3337e?w=400",
+                        IsAvailable = true,
+                        Name = "Chả giò chiên",
+                        Price = 55000m
+                    },
+                    new
+                    {
+                        Id = 3,
+                        CategoryId = 2,
+                        Description = "Cơm tấm sườn nướng than hoa",
+                        ImageUrl = "https://images.unsplash.com/photo-1516714435131-44d6b64dc6a2?w=400",
+                        IsAvailable = true,
+                        Name = "Cơm sườn nướng",
+                        Price = 75000m
+                    },
+                    new
+                    {
+                        Id = 4,
+                        CategoryId = 2,
+                        Description = "Phở bò truyền thống tái nạm",
+                        ImageUrl = "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=400",
+                        IsAvailable = true,
+                        Name = "Phở bò tái nạm",
+                        Price = 70000m
+                    },
+                    new
+                    {
+                        Id = 5,
+                        CategoryId = 2,
+                        Description = "Bún bò Huế cay đặc trưng miền Trung",
+                        ImageUrl = "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400",
+                        IsAvailable = true,
+                        Name = "Bún bò Huế",
+                        Price = 65000m
+                    },
+                    new
+                    {
+                        Id = 6,
+                        CategoryId = 3,
+                        Description = "Chè đậu xanh, đỏ, thạch rau câu",
+                        ImageUrl = "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400",
+                        IsAvailable = true,
+                        Name = "Chè ba màu",
+                        Price = 35000m
+                    },
+                    new
+                    {
+                        Id = 7,
+                        CategoryId = 4,
+                        Description = "Cà phê phin truyền thống với sữa đặc",
+                        ImageUrl = "https://images.unsplash.com/photo-1551030173-122aabc4489c?w=400",
+                        IsAvailable = true,
+                        Name = "Cà phê sữa đá",
+                        Price = 30000m
+                    },
+                    new
+                    {
+                        Id = 8,
+                        CategoryId = 4,
+                        Description = "Chanh tươi ép lạnh",
+                        ImageUrl = "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400",
+                        IsAvailable = true,
+                        Name = "Nước chanh ép",
+                        Price = 25000m
+                    });
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Notification", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsRead")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                b.Property<string>("Message")
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasColumnType("character varying(500)");
 
-                    b.Property<int?>("OrderId")
-                        .HasColumnType("integer");
+                b.Property<int?>("OrderId")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                b.Property<string>("Title")
+                    .IsRequired()
+                    .HasMaxLength(200)
+                    .HasColumnType("character varying(200)");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
+                b.Property<string>("Type")
+                    .IsRequired()
+                    .HasMaxLength(30)
+                    .HasColumnType("character varying(30)");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                b.Property<int?>("UserId")
+                    .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("IsRead")
-                        .HasDatabaseName("IX_Notification_IsRead");
+                b.HasIndex("IsRead")
+                    .HasDatabaseName("IX_Notification_IsRead");
 
-                    b.HasIndex("OrderId");
+                b.HasIndex("OrderId");
 
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("IX_Notification_UserId");
+                b.HasIndex("UserId")
+                    .HasDatabaseName("IX_Notification_UserId");
 
-                    b.ToTable("Notifications");
-                });
+                b.ToTable("Notifications");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Order", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Note")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                b.Property<string>("Note")
+                    .HasMaxLength(500)
+                    .HasColumnType("character varying(500)");
 
-                    b.Property<string>("OrderCode")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                b.Property<string>("OrderCode")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("character varying(20)");
 
-                    b.Property<DateTime>("OrderDate")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("OrderDate")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("StaffId")
-                        .HasColumnType("integer");
+                b.Property<int?>("StaffId")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("character varying(20)");
 
-                    b.Property<int>("TableId")
-                        .HasColumnType("integer");
+                b.Property<int>("TableId")
+                    .HasColumnType("integer");
 
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
+                b.Property<decimal>("TotalAmount")
+                    .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("OrderCode")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Order_Code_Unique");
+                b.HasIndex("OrderCode")
+                    .IsUnique()
+                    .HasDatabaseName("IX_Order_Code_Unique");
 
-                    b.HasIndex("OrderDate")
-                        .HasDatabaseName("IX_Order_Date");
+                b.HasIndex("OrderDate")
+                    .HasDatabaseName("IX_Order_Date");
 
-                    b.HasIndex("StaffId");
+                b.HasIndex("StaffId");
 
-                    b.HasIndex("Status")
-                        .HasDatabaseName("IX_Order_Status");
+                b.HasIndex("Status")
+                    .HasDatabaseName("IX_Order_Status");
 
-                    b.HasIndex("TableId");
+                b.HasIndex("TableId");
 
-                    b.ToTable("Orders");
-                });
+                b.ToTable("Orders");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.OrderDetail", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("FoodId")
-                        .HasColumnType("integer");
+                b.Property<int>("FoodId")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("Note")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                b.Property<string>("Note")
+                    .HasMaxLength(255)
+                    .HasColumnType("character varying(255)");
 
-                    b.Property<int>("OrderId")
-                        .HasColumnType("integer");
+                b.Property<int>("OrderId")
+                    .HasColumnType("integer");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
+                b.Property<int>("Quantity")
+                    .HasColumnType("integer");
 
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(18,2)");
+                b.Property<decimal>("UnitPrice")
+                    .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("FoodId");
+                b.HasIndex("FoodId");
 
-                    b.HasIndex("OrderId");
+                b.HasIndex("OrderId");
 
-                    b.ToTable("OrderDetails");
-                });
+                b.ToTable("OrderDetails");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Payment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                b.Property<decimal>("Amount")
+                    .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Method")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                b.Property<string>("Method")
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnType("character varying(50)");
 
-                    b.Property<string>("Note")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                b.Property<string>("Note")
+                    .HasMaxLength(200)
+                    .HasColumnType("character varying(200)");
 
-                    b.Property<int>("OrderId")
-                        .HasColumnType("integer");
+                b.Property<int>("OrderId")
+                    .HasColumnType("integer");
 
-                    b.Property<DateTime>("PaymentDate")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("PaymentDate")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("OrderId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Payment_OrderId_Unique");
+                b.HasIndex("OrderId")
+                    .IsUnique()
+                    .HasDatabaseName("IX_Payment_OrderId_Unique");
 
-                    b.ToTable("Payments");
-                });
+                b.ToTable("Payments");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Promotion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                b.Property<string>("Code")
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                b.Property<string>("Description")
+                    .HasMaxLength(500)
+                    .HasColumnType("character varying(500)");
 
-                    b.Property<string>("DiscountType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                b.Property<string>("DiscountType")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("character varying(20)");
 
-                    b.Property<decimal>("DiscountValue")
-                        .HasColumnType("decimal(18,2)");
+                b.Property<decimal>("DiscountValue")
+                    .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("EndDate")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsActive")
+                    .HasColumnType("boolean");
 
-                    b.Property<decimal?>("MaxDiscountAmount")
-                        .HasColumnType("decimal(18,2)");
+                b.Property<decimal?>("MaxDiscountAmount")
+                    .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("MinOrderAmount")
-                        .HasColumnType("decimal(18,2)");
+                b.Property<decimal?>("MinOrderAmount")
+                    .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasMaxLength(200)
+                    .HasColumnType("character varying(200)");
 
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("StartDate")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UsageCount")
-                        .HasColumnType("integer");
+                b.Property<int>("UsageCount")
+                    .HasColumnType("integer");
 
-                    b.Property<int?>("UsageLimit")
-                        .HasColumnType("integer");
+                b.Property<int?>("UsageLimit")
+                    .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("Code")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Promotion_Code_Unique");
+                b.HasIndex("Code")
+                    .IsUnique()
+                    .HasDatabaseName("IX_Promotion_Code_Unique");
 
-                    b.ToTable("Promotions");
+                b.ToTable("Promotions");
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Code = "WELCOME10",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Giảm 10% cho lần đầu tiên, đơn từ 100.000đ",
-                            DiscountType = "Percent",
-                            DiscountValue = 10m,
-                            EndDate = new DateTime(2026, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            MaxDiscountAmount = 50000m,
-                            MinOrderAmount = 100000m,
-                            Name = "Chào mừng khách mới",
-                            StartDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            UsageCount = 0,
-                            UsageLimit = 100
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Code = "GIAM50K",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Giảm thẳng 50.000đ cho đơn từ 300.000đ",
-                            DiscountType = "Fixed",
-                            DiscountValue = 50000m,
-                            EndDate = new DateTime(2026, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            MinOrderAmount = 300000m,
-                            Name = "Giảm 50.000đ cuối tuần",
-                            StartDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            UsageCount = 0,
-                            UsageLimit = 50
-                        });
-                });
+                b.HasData(
+                    new
+                    {
+                        Id = 1,
+                        Code = "WELCOME10",
+                        CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        Description = "Giảm 10% cho lần đầu tiên, đơn từ 100.000đ",
+                        DiscountType = "Percent",
+                        DiscountValue = 10m,
+                        EndDate = new DateTime(2026, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        IsActive = true,
+                        MaxDiscountAmount = 50000m,
+                        MinOrderAmount = 100000m,
+                        Name = "Chào mừng khách mới",
+                        StartDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        UsageCount = 0,
+                        UsageLimit = 100
+                    },
+                    new
+                    {
+                        Id = 2,
+                        Code = "GIAM50K",
+                        CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        Description = "Giảm thẳng 50.000đ cho đơn từ 300.000đ",
+                        DiscountType = "Fixed",
+                        DiscountValue = 50000m,
+                        EndDate = new DateTime(2026, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        IsActive = true,
+                        MinOrderAmount = 300000m,
+                        Name = "Giảm 50.000đ cuối tuần",
+                        StartDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        UsageCount = 0,
+                        UsageLimit = 50
+                    });
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Reservation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CustomerEmail")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                b.Property<string>("CustomerEmail")
+                    .HasMaxLength(200)
+                    .HasColumnType("character varying(200)");
 
-                    b.Property<string>("CustomerName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                b.Property<string>("CustomerName")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("character varying(100)");
 
-                    b.Property<string>("CustomerPhone")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                b.Property<string>("CustomerPhone")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("character varying(20)");
 
-                    b.Property<int>("GuestCount")
-                        .HasColumnType("integer");
+                b.Property<int>("GuestCount")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("Note")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                b.Property<string>("Note")
+                    .HasMaxLength(500)
+                    .HasColumnType("character varying(500)");
 
-                    b.Property<DateTime>("ReservationDate")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("ReservationDate")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("StaffId")
-                        .HasColumnType("integer");
+                b.Property<int?>("StaffId")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("character varying(20)");
 
-                    b.Property<int?>("TableId")
-                        .HasColumnType("integer");
+                b.Property<int?>("TableId")
+                    .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("CustomerPhone")
-                        .HasDatabaseName("IX_Reservation_Phone");
+                b.HasIndex("CustomerPhone")
+                    .HasDatabaseName("IX_Reservation_Phone");
 
-                    b.HasIndex("ReservationDate")
-                        .HasDatabaseName("IX_Reservation_Date");
+                b.HasIndex("ReservationDate")
+                    .HasDatabaseName("IX_Reservation_Date");
 
-                    b.HasIndex("StaffId");
+                b.HasIndex("StaffId");
 
-                    b.HasIndex("Status")
-                        .HasDatabaseName("IX_Reservation_Status");
+                b.HasIndex("Status")
+                    .HasDatabaseName("IX_Reservation_Status");
 
-                    b.HasIndex("TableId");
+                b.HasIndex("TableId");
 
-                    b.ToTable("Reservations");
-                });
+                b.ToTable("Reservations");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Review", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Comment")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                b.Property<string>("Comment")
+                    .HasMaxLength(1000)
+                    .HasColumnType("character varying(1000)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CustomerName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                b.Property<string>("CustomerName")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("character varying(100)");
 
-                    b.Property<int?>("FoodId")
-                        .HasColumnType("integer");
+                b.Property<int?>("FoodId")
+                    .HasColumnType("integer");
 
-                    b.Property<bool>("IsVisible")
-                        .HasColumnType("boolean");
+                b.Property<bool>("IsVisible")
+                    .HasColumnType("boolean");
 
-                    b.Property<int>("OrderId")
-                        .HasColumnType("integer");
+                b.Property<int>("OrderId")
+                    .HasColumnType("integer");
 
-                    b.Property<int>("Rating")
-                        .HasColumnType("integer");
+                b.Property<int>("Rating")
+                    .HasColumnType("integer");
 
-                    b.Property<DateTime?>("ReplyAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime?>("ReplyAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("ReplyComment")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                b.Property<string>("ReplyComment")
+                    .HasMaxLength(500)
+                    .HasColumnType("character varying(500)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("FoodId");
+                b.HasIndex("FoodId");
 
-                    b.HasIndex("OrderId")
-                        .HasDatabaseName("IX_Review_OrderId");
+                b.HasIndex("OrderId")
+                    .HasDatabaseName("IX_Review_OrderId");
 
-                    b.HasIndex("Rating")
-                        .HasDatabaseName("IX_Review_Rating");
+                b.HasIndex("Rating")
+                    .HasDatabaseName("IX_Review_Rating");
 
-                    b.ToTable("Reviews");
-                });
+                b.ToTable("Reviews");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Table", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Capacity")
-                        .HasColumnType("integer");
+                b.Property<int>("Capacity")
+                    .HasColumnType("integer");
 
-                    b.Property<string>("Note")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                b.Property<string>("Note")
+                    .HasMaxLength(200)
+                    .HasColumnType("character varying(200)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("character varying(20)");
 
-                    b.Property<string>("TableNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                b.Property<string>("TableNumber")
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnType("character varying(50)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Tables");
+                b.ToTable("Tables");
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Capacity = 4,
-                            Status = "Available",
-                            TableNumber = "Bàn 01"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Capacity = 4,
-                            Status = "Available",
-                            TableNumber = "Bàn 02"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Capacity = 6,
-                            Status = "Available",
-                            TableNumber = "Bàn 03"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Capacity = 6,
-                            Status = "Available",
-                            TableNumber = "Bàn 04"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Capacity = 2,
-                            Status = "Available",
-                            TableNumber = "Bàn 05"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Capacity = 8,
-                            Status = "Available",
-                            TableNumber = "VIP 01"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Capacity = 10,
-                            Status = "Available",
-                            TableNumber = "VIP 02"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Capacity = 4,
-                            Status = "Available",
-                            TableNumber = "Bàn 06"
-                        });
-                });
+                b.HasData(
+                    new
+                    {
+                        Id = 1,
+                        Capacity = 4,
+                        Status = "Available",
+                        TableNumber = "Bàn 01"
+                    },
+                    new
+                    {
+                        Id = 2,
+                        Capacity = 4,
+                        Status = "Available",
+                        TableNumber = "Bàn 02"
+                    },
+                    new
+                    {
+                        Id = 3,
+                        Capacity = 6,
+                        Status = "Available",
+                        TableNumber = "Bàn 03"
+                    },
+                    new
+                    {
+                        Id = 4,
+                        Capacity = 6,
+                        Status = "Available",
+                        TableNumber = "Bàn 04"
+                    },
+                    new
+                    {
+                        Id = 5,
+                        Capacity = 2,
+                        Status = "Available",
+                        TableNumber = "Bàn 05"
+                    },
+                    new
+                    {
+                        Id = 6,
+                        Capacity = 8,
+                        Status = "Available",
+                        TableNumber = "VIP 01"
+                    },
+                    new
+                    {
+                        Id = 7,
+                        Capacity = 10,
+                        Status = "Available",
+                        TableNumber = "VIP 02"
+                    },
+                    new
+                    {
+                        Id = 8,
+                        Capacity = 4,
+                        Status = "Available",
+                        TableNumber = "Bàn 06"
+                    });
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.User", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("FullName")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                b.Property<string>("Email")
+                    .HasMaxLength(200)
+                    .HasColumnType("character varying(200)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                b.Property<string>("FullName")
+                    .HasMaxLength(200)
+                    .HasColumnType("character varying(200)");
 
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<bool>("IsActive")
+                    .HasColumnType("boolean");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                b.Property<string>("PasswordHash")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                b.Property<string>("Role")
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnType("character varying(50)");
 
-                    b.HasKey("Id");
+                b.Property<string>("Phone")
+                    .HasMaxLength(20)
+                    .HasColumnType("character varying(20)");
 
-                    b.HasIndex("Username")
-                        .IsUnique()
-                        .HasDatabaseName("IX_User_Username_Unique");
+                b.Property<string>("Username")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("character varying(100)");
 
-                    b.ToTable("Users");
+                b.HasKey("Id");
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FullName = "Quản trị viên",
-                            IsActive = true,
-                            PasswordHash = "$2a$11$d5JHFrSkR1cdQ7bi0EqPkevExYeE0EOUbtlb3CgyTBdeb9eFrQreO",
-                            Role = "Admin",
-                            Username = "admin"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FullName = "Nhân viên 1",
-                            IsActive = true,
-                            PasswordHash = "$2a$11$UXui1/MPKZKCM0A0WQq7buFL3VsxXyqeFeos/Yi8TBFA1QF3RDllm",
-                            Role = "Staff",
-                            Username = "staff1"
-                        });
-                });
+                b.HasIndex("Username")
+                    .IsUnique()
+                    .HasDatabaseName("IX_User_Username_Unique");
+
+                b.ToTable("Users");
+
+                b.HasData(
+                    new
+                    {
+                        Id = 1,
+                        CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        FullName = "Quản trị viên",
+                        IsActive = true,
+                        PasswordHash = "$2a$11$d5JHFrSkR1cdQ7bi0EqPkevExYeE0EOUbtlb3CgyTBdeb9eFrQreO",
+                        Role = "Admin",
+                        Username = "admin"
+                    },
+                    new
+                    {
+                        Id = 2,
+                        CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        FullName = "Nhân viên 1",
+                        IsActive = true,
+                        PasswordHash = "$2a$11$UXui1/MPKZKCM0A0WQq7buFL3VsxXyqeFeos/Yi8TBFA1QF3RDllm",
+                        Role = "Staff",
+                        Username = "staff1"
+                    });
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Food", b =>
-                {
-                    b.HasOne("RestaurantAPI.Models.Category", "Category")
-                        .WithMany("Foods")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+            {
+                b.HasOne("RestaurantAPI.Models.Category", "Category")
+                    .WithMany("Foods")
+                    .HasForeignKey("CategoryId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Category");
-                });
+                b.Navigation("Category");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Notification", b =>
-                {
-                    b.HasOne("RestaurantAPI.Models.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.SetNull);
+            {
+                b.HasOne("RestaurantAPI.Models.Order", "Order")
+                    .WithMany()
+                    .HasForeignKey("OrderId")
+                    .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("RestaurantAPI.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                b.HasOne("RestaurantAPI.Models.User", "User")
+                    .WithMany()
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Order");
+                b.Navigation("Order");
 
-                    b.Navigation("User");
-                });
+                b.Navigation("User");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Order", b =>
-                {
-                    b.HasOne("RestaurantAPI.Models.User", "Staff")
-                        .WithMany()
-                        .HasForeignKey("StaffId")
-                        .OnDelete(DeleteBehavior.SetNull);
+            {
+                b.HasOne("RestaurantAPI.Models.User", "Staff")
+                    .WithMany()
+                    .HasForeignKey("StaffId")
+                    .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("RestaurantAPI.Models.Table", "Table")
-                        .WithMany()
-                        .HasForeignKey("TableId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("RestaurantAPI.Models.Table", "Table")
+                    .WithMany()
+                    .HasForeignKey("TableId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Staff");
+                b.Navigation("Staff");
 
-                    b.Navigation("Table");
-                });
+                b.Navigation("Table");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.OrderDetail", b =>
-                {
-                    b.HasOne("RestaurantAPI.Models.Food", "Food")
-                        .WithMany()
-                        .HasForeignKey("FoodId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+            {
+                b.HasOne("RestaurantAPI.Models.Food", "Food")
+                    .WithMany()
+                    .HasForeignKey("FoodId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("RestaurantAPI.Models.Order", "Order")
-                        .WithMany("OrderDetails")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                b.HasOne("RestaurantAPI.Models.Order", "Order")
+                    .WithMany("OrderDetails")
+                    .HasForeignKey("OrderId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.Navigation("Food");
+                b.Navigation("Food");
 
-                    b.Navigation("Order");
-                });
+                b.Navigation("Order");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Payment", b =>
-                {
-                    b.HasOne("RestaurantAPI.Models.Order", "Order")
-                        .WithOne("Payment")
-                        .HasForeignKey("RestaurantAPI.Models.Payment", "OrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+            {
+                b.HasOne("RestaurantAPI.Models.Order", "Order")
+                    .WithOne("Payment")
+                    .HasForeignKey("RestaurantAPI.Models.Payment", "OrderId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Order");
-                });
+                b.Navigation("Order");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Reservation", b =>
-                {
-                    b.HasOne("RestaurantAPI.Models.User", "Staff")
-                        .WithMany()
-                        .HasForeignKey("StaffId")
-                        .OnDelete(DeleteBehavior.SetNull);
+            {
+                b.HasOne("RestaurantAPI.Models.User", "Staff")
+                    .WithMany()
+                    .HasForeignKey("StaffId")
+                    .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("RestaurantAPI.Models.Table", "Table")
-                        .WithMany()
-                        .HasForeignKey("TableId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                b.HasOne("RestaurantAPI.Models.Table", "Table")
+                    .WithMany()
+                    .HasForeignKey("TableId")
+                    .OnDelete(DeleteBehavior.SetNull);
 
-                    b.Navigation("Staff");
+                b.Navigation("Staff");
 
-                    b.Navigation("Table");
-                });
+                b.Navigation("Table");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Review", b =>
-                {
-                    b.HasOne("RestaurantAPI.Models.Food", "Food")
-                        .WithMany()
-                        .HasForeignKey("FoodId")
-                        .OnDelete(DeleteBehavior.SetNull);
+            {
+                b.HasOne("RestaurantAPI.Models.Food", "Food")
+                    .WithMany()
+                    .HasForeignKey("FoodId")
+                    .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("RestaurantAPI.Models.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                b.HasOne("RestaurantAPI.Models.Order", "Order")
+                    .WithMany()
+                    .HasForeignKey("OrderId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Food");
+                b.Navigation("Food");
 
-                    b.Navigation("Order");
-                });
+                b.Navigation("Order");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Category", b =>
-                {
-                    b.Navigation("Foods");
-                });
+            {
+                b.Navigation("Foods");
+            });
 
             modelBuilder.Entity("RestaurantAPI.Models.Order", b =>
-                {
-                    b.Navigation("OrderDetails");
+            {
+                b.Navigation("OrderDetails");
 
-                    b.Navigation("Payment");
-                });
+                b.Navigation("Payment");
+            });
 #pragma warning restore 612, 618
         }
     }

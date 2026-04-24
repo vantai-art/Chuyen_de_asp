@@ -21,7 +21,14 @@ namespace RestaurantAPI.Models
         [StringLength(200)]
         public string? FullName { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        [StringLength(200)]
+        [EmailAddress]
+        public string? Email { get; set; }
+
+        [StringLength(20)]
+        public string? Phone { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public bool IsActive { get; set; } = true;
     }

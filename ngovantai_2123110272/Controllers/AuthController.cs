@@ -47,6 +47,8 @@ namespace RestaurantAPI.Controllers
                     Username = user.Username,
                     Role = user.Role,
                     FullName = user.FullName,
+                    Email = user.Email,
+                    Phone = user.Phone,
                     UserId = user.Id
                 });
             }
@@ -88,6 +90,8 @@ namespace RestaurantAPI.Controllers
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                     Role = role,
                     FullName = dto.FullName,
+                    Email = dto.Email,
+                    Phone = dto.Phone,
                     CreatedAt = DateTime.UtcNow,
                     IsActive = true
                 };
