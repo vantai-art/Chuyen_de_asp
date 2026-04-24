@@ -136,15 +136,17 @@ app.Use(async (context, next) =>
     {
         "http://localhost:3000",
         "http://localhost:3001",
-        "https://fe-asp-net.onrender.com"
+        "https://fe-asp-net.onrender.com",
+        "https://fe-asp-net.onrender.com/"
     };
 
     if (allowedOrigins.Contains(origin))
     {
         context.Response.Headers["Access-Control-Allow-Origin"] = origin;
         context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
-        context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With";
+        context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept";
         context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+        context.Response.Headers["Access-Control-Max-Age"] = "86400";
     }
 
     if (context.Request.Method == "OPTIONS")
