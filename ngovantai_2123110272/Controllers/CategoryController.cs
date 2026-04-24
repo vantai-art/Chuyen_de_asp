@@ -24,6 +24,8 @@ namespace RestaurantAPI.Controllers
                     c.Id,
                     c.Name,
                     c.Description,
+                    c.ImageUrl,
+                    c.Color,
                     FoodCount = c.Foods != null ? c.Foods.Count : 0
                 })
                 .OrderBy(c => c.Id)
@@ -49,6 +51,7 @@ namespace RestaurantAPI.Controllers
             var exists = await _context.Categories.AnyAsync(c => c.Name == category.Name);
             if (exists) return BadRequest(new { message = "Tên danh mục đã tồn tại" });
 
+            // ImageUrl và Color được nhận tự động qua model binding
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
@@ -65,7 +68,15 @@ namespace RestaurantAPI.Controllers
             var nameExists = await _context.Categories.AnyAsync(c => c.Name == category.Name && c.Id != id);
             if (nameExists) return BadRequest(new { message = "Tên danh mục đã tồn tại" });
 
-            _context.Entry(category).State = EntityState.Modified;
+            // ✅ Update trực tiếp để giữ lại ImageUrl, Color
+            var existing = await _context.Categories.FindAsync(id);
+            if (existing == null) return NotFound(new { message = "Không tìm thấy danh mục" });
+
+            existing.Name = category.Name;
+            existing.Description = category.Description;
+            existing.ImageUrl = category.ImageUrl;
+            existing.Color = category.Color;
+
             try { await _context.SaveChangesAsync(); }
             catch (DbUpdateConcurrencyException)
             {
@@ -73,7 +84,7 @@ namespace RestaurantAPI.Controllers
                     return NotFound(new { message = "Không tìm thấy danh mục" });
                 throw;
             }
-            return Ok(new { message = "Cập nhật thành công", category });
+            return Ok(new { message = "Cập nhật thành công", category = existing });
         }
 
         // DELETE: api/category/{id}?force=true  (Admin only)
