@@ -26,26 +26,35 @@ namespace RestaurantAPI.Controllers
 
         // ================= LOGIN =================
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == dto.Username && u.IsActive);
-
-            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
-                return Unauthorized(new { message = "Username hoặc mật khẩu không đúng" });
-
-            var token = GenerateToken(user);
-
-            return Ok(new AuthResponseDto
+            try
             {
-                Token = token,
-                Username = user.Username,
-                Role = user.Role,
-                FullName = user.FullName,
-                UserId = user.Id
-            });
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Username == dto.Username && u.IsActive);
+
+                if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+                    return Unauthorized(new { message = "Username hoặc mật khẩu không đúng" });
+
+                var token = GenerateToken(user);
+
+                return Ok(new AuthResponseDto
+                {
+                    Token = token,
+                    Username = user.Username,
+                    Role = user.Role,
+                    FullName = user.FullName,
+                    UserId = user.Id
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Login error: " + ex.Message);
+                return StatusCode(500, new { message = "Lỗi server, vui lòng thử lại." });
+            }
         }
 
         // ================= REGISTER (Customer) =================
@@ -55,42 +64,48 @@ namespace RestaurantAPI.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var exists = await _context.Users.AnyAsync(u => u.Username == dto.Username);
-            if (exists)
-                return BadRequest(new { message = "Username đã tồn tại" });
-
-            // 🔥 LUÔN MẶC ĐỊNH CUSTOMER
-            string role = "Customer";
-
-            // Nếu admin gọi thì cho phép tạo Staff/Admin
-            var callerRole = User?.FindFirstValue(ClaimTypes.Role);
-
-            if (!string.IsNullOrEmpty(callerRole) &&
-                callerRole == "Admin" &&
-                (dto.Role == "Admin" || dto.Role == "Staff"))
+            try
             {
-                role = dto.Role;
+                var exists = await _context.Users.AnyAsync(u => u.Username == dto.Username);
+                if (exists)
+                    return BadRequest(new { message = "Username đã tồn tại" });
+
+                // Mặc định CUSTOMER - chỉ Admin mới tạo được Staff/Admin
+                string role = "Customer";
+                var callerRole = User?.FindFirstValue(ClaimTypes.Role);
+
+                if (!string.IsNullOrEmpty(callerRole) &&
+                    callerRole == "Admin" &&
+                    (dto.Role == "Admin" || dto.Role == "Staff"))
+                {
+                    role = dto.Role;
+                }
+
+                var user = new User
+                {
+                    Username = dto.Username,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                    Role = role,
+                    FullName = dto.FullName,
+                    CreatedAt = DateTime.Now,
+                    IsActive = true
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Đăng ký tài khoản thành công",
+                    userId = user.Id,
+                    role = user.Role
+                });
             }
-
-            var user = new User
+            catch (Exception ex)
             {
-                Username = dto.Username,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                Role = role,
-                FullName = dto.FullName,
-                CreatedAt = DateTime.Now,
-                IsActive = true
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                message = "Đăng ký tài khoản thành công",
-                userId = user.Id,
-                role = user.Role
-            });
+                Console.WriteLine("Register error: " + ex.Message);
+                return StatusCode(500, new { message = "Lỗi server khi đăng ký: " + ex.Message });
+            }
         }
 
         // ================= REGISTER STAFF (ADMIN ONLY) =================
@@ -193,7 +208,8 @@ namespace RestaurantAPI.Controllers
         private string GenerateToken(User user)
         {
             var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY")
-                         ?? _config["Jwt:Key"]!;
+                         ?? _config["Jwt:Key"]
+                         ?? "Default_Secret_Key_123456789";
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -206,15 +222,12 @@ namespace RestaurantAPI.Controllers
                 new Claim("FullName", user.FullName ?? "")
             };
 
-            var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
-                            ?? _config["Jwt:Issuer"];
-
-            var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
-                              ?? _config["Jwt:Audience"];
+            var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? _config["Jwt:Issuer"];
+            var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? _config["Jwt:Audience"];
 
             var token = new JwtSecurityToken(
-                issuer: jwtIssuer,
-                audience: jwtAudience,
+                issuer: string.IsNullOrEmpty(jwtIssuer) ? null : jwtIssuer,
+                audience: string.IsNullOrEmpty(jwtAudience) ? null : jwtAudience,
                 claims: claims,
                 expires: DateTime.Now.AddHours(8),
                 signingCredentials: creds

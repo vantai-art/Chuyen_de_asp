@@ -43,7 +43,6 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.WriteIndented = true;
 });
 
-// ✅ FIXED CORS - Cho phép localhost:3000
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
@@ -76,7 +75,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
 
-        // Cho phép token từ query string (signalR, etc)
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
@@ -124,34 +122,38 @@ var app = builder.Build();
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 app.Urls.Add($"http://0.0.0.0:{port}");
 
-// ✅ OPTIONS preflight phải đặt TRƯỚC tất cả middleware khác
+// ========================================================
+// CORS MIDDLEWARE - PHẢI ĐẦU TIÊN - gắn header kể cả lỗi 500
+// ========================================================
 app.Use(async (context, next) =>
 {
+    var origin = context.Request.Headers["Origin"].ToString();
+    var allowedOrigins = new[]
+    {
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://fe-asp-net.onrender.com"
+    };
+
+    if (allowedOrigins.Contains(origin))
+    {
+        context.Response.Headers["Access-Control-Allow-Origin"] = origin;
+        context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
+        context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With";
+        context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+    }
+
     if (context.Request.Method == "OPTIONS")
     {
-        var origin = context.Request.Headers["Origin"].ToString();
-        var allowedOrigins = new[] {
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "https://fe-asp-net.onrender.com"
-        };
-        if (allowedOrigins.Contains(origin))
-        {
-            context.Response.Headers["Access-Control-Allow-Origin"] = origin;
-            context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
-            context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With";
-            context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
-        }
         context.Response.StatusCode = 204;
         await context.Response.CompleteAsync();
         return;
     }
+
     await next();
 });
 
 app.UseRouting();
-
-// ✅ CORS sau UseRouting
 app.UseCors("AllowReactApp");
 
 app.UseSwagger();
@@ -165,21 +167,24 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Database migration
+// ========================================================
+// DATABASE MIGRATION - sau khi pipeline xong, trước app.Run()
+// ========================================================
 using (var scope = app.Services.CreateScope())
 {
     try
     {
-        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        if (context.Database.IsRelational())
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        if (dbContext.Database.IsRelational())
         {
-            context.Database.Migrate(); // ✅ uncommented
+            dbContext.Database.Migrate();
             Console.WriteLine("Migration success");
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine("Migration error: " + ex.Message);
+        // Log nhưng không crash app - DB có thể đã được migrate rồi
+        Console.WriteLine("Migration warning: " + ex.Message);
     }
 }
 
