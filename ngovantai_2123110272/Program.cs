@@ -185,6 +185,39 @@ using (var scope = app.Services.CreateScope())
             Console.WriteLine("Migration success");
         }
 
+        // ========================================================
+        // TỰ ĐỘNG THÊM CỘT Email/Phone NẾU CHƯA CÓ (an toàn 100%)
+        // Cách này không phụ thuộc vào EF migration file
+        // ========================================================
+        try
+        {
+            dbContext.Database.ExecuteSqlRaw(@"
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name='Users' AND column_name='Email'
+                    ) THEN
+                        ALTER TABLE ""Users"" ADD COLUMN ""Email"" VARCHAR(200) NULL;
+                        RAISE NOTICE 'Added Email column';
+                    END IF;
+
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name='Users' AND column_name='Phone'
+                    ) THEN
+                        ALTER TABLE ""Users"" ADD COLUMN ""Phone"" VARCHAR(20) NULL;
+                        RAISE NOTICE 'Added Phone column';
+                    END IF;
+                END $$;
+            ");
+            Console.WriteLine("Email/Phone columns ensured.");
+        }
+        catch (Exception colEx)
+        {
+            Console.WriteLine("Column ensure warning: " + colEx.Message);
+        }
+
         // Seed admin - chỉ tạo nếu chưa có, an toàn khi restart nhiều lần
         if (!dbContext.Users.Any(u => u.Username == "admin"))
         {
