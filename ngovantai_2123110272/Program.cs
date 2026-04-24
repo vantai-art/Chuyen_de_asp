@@ -5,8 +5,6 @@ using Microsoft.OpenApi.Models;
 using RestaurantAPI.Data;
 using System.Text;
 
-// Bắt buộc với Npgsql + PostgreSQL: tất cả DateTime phải là UTC
-// Đặt TRƯỚC mọi thứ khác
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", false);
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,17 +45,14 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.WriteIndented = true;
 });
 
+// ✅ CORS - AllowAnyOrigin để bypass Render proxy block
+// Dùng token Bearer nên không cần AllowCredentials
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp", policy =>
-        policy.WithOrigins(
-                "http://localhost:3000",
-                "http://localhost:3001",
-                "https://fe-asp-net.onrender.com"
-            )
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
+    options.AddPolicy("AllowAll", policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader());
 });
 
 // JWT Configuration
@@ -126,28 +121,14 @@ var app = builder.Build();
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 app.Urls.Add($"http://0.0.0.0:{port}");
 
-// ========================================================
-// CORS MIDDLEWARE - PHẢI ĐẦU TIÊN - gắn header kể cả lỗi 500
-// ========================================================
+// ✅ CORS middleware thủ công - đặt ĐẦU TIÊN
+// AllowAnyOrigin để Render proxy không chặn
 app.Use(async (context, next) =>
 {
-    var origin = context.Request.Headers["Origin"].ToString();
-    var allowedOrigins = new[]
-    {
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "https://fe-asp-net.onrender.com",
-        "https://fe-asp-net.onrender.com/"
-    };
-
-    if (allowedOrigins.Contains(origin))
-    {
-        context.Response.Headers["Access-Control-Allow-Origin"] = origin;
-        context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
-        context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept";
-        context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
-        context.Response.Headers["Access-Control-Max-Age"] = "86400";
-    }
+    context.Response.Headers["Access-Control-Allow-Origin"] = "*";
+    context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
+    context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept";
+    context.Response.Headers["Access-Control-Max-Age"] = "86400";
 
     if (context.Request.Method == "OPTIONS")
     {
@@ -160,7 +141,7 @@ app.Use(async (context, next) =>
 });
 
 app.UseRouting();
-app.UseCors("AllowReactApp");
+app.UseCors("AllowAll");
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -174,7 +155,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 // ========================================================
-// DATABASE MIGRATION + SEED ADMIN
+// DATABASE MIGRATION + SEED
 // ========================================================
 using (var scope = app.Services.CreateScope())
 {
@@ -187,10 +168,6 @@ using (var scope = app.Services.CreateScope())
             Console.WriteLine("Migration success");
         }
 
-        // ========================================================
-        // TỰ ĐỘNG THÊM CỘT Email/Phone NẾU CHƯA CÓ (an toàn 100%)
-        // Cách này không phụ thuộc vào EF migration file
-        // ========================================================
         try
         {
             dbContext.Database.ExecuteSqlRaw(@"
@@ -201,7 +178,6 @@ using (var scope = app.Services.CreateScope())
                         WHERE table_name='Users' AND column_name='Email'
                     ) THEN
                         ALTER TABLE ""Users"" ADD COLUMN ""Email"" VARCHAR(200) NULL;
-                        RAISE NOTICE 'Added Email column';
                     END IF;
 
                     IF NOT EXISTS (
@@ -209,18 +185,30 @@ using (var scope = app.Services.CreateScope())
                         WHERE table_name='Users' AND column_name='Phone'
                     ) THEN
                         ALTER TABLE ""Users"" ADD COLUMN ""Phone"" VARCHAR(20) NULL;
-                        RAISE NOTICE 'Added Phone column';
+                    END IF;
+
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name='Categories' AND column_name='ImageUrl'
+                    ) THEN
+                        ALTER TABLE ""Categories"" ADD COLUMN ""ImageUrl"" VARCHAR(2000) NULL;
+                    END IF;
+
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name='Categories' AND column_name='Color'
+                    ) THEN
+                        ALTER TABLE ""Categories"" ADD COLUMN ""Color"" VARCHAR(20) NULL;
                     END IF;
                 END $$;
             ");
-            Console.WriteLine("Email/Phone columns ensured.");
+            Console.WriteLine("Columns ensured OK.");
         }
         catch (Exception colEx)
         {
             Console.WriteLine("Column ensure warning: " + colEx.Message);
         }
 
-        // Seed admin - chỉ tạo nếu chưa có, an toàn khi restart nhiều lần
         if (!dbContext.Users.Any(u => u.Username == "admin"))
         {
             dbContext.Users.Add(new RestaurantAPI.Models.User
