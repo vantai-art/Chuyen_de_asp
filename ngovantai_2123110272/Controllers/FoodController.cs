@@ -95,20 +95,49 @@ namespace RestaurantAPI.Controllers
             return Ok(new { message = food.IsAvailable ? "Đã bật phục vụ" : "Đã tắt phục vụ", isAvailable = food.IsAvailable });
         }
 
-        // DELETE: api/food/{id}  (Admin only)
+        // DELETE: api/food/{id}?force=true  (Admin only)
+        // - Nếu chưa có trong đơn hàng → xóa hẳn
+        // - Nếu đã có trong đơn hàng và ?force=false (mặc định) → trả lỗi gợi ý
+        // - Nếu đã có trong đơn hàng và ?force=true → tắt phục vụ (soft delete)
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> DeleteFood(int id)
+        public async Task<ActionResult> DeleteFood(int id, [FromQuery] bool force = false)
         {
             var food = await _context.Foods.FindAsync(id);
             if (food == null) return NotFound(new { message = "Không tìm thấy món ăn" });
 
             var inUse = await _context.OrderDetails.AnyAsync(od => od.FoodId == id);
-            if (inUse) return BadRequest(new { message = "Không thể xóa vì món đã có trong đơn hàng" });
 
+            if (inUse)
+            {
+                if (!force)
+                {
+                    // Trả về 409 Conflict với thông tin rõ ràng để FE xử lý
+                    return Conflict(new
+                    {
+                        message = "Món ăn đã có trong lịch sử đơn hàng, không thể xóa hẳn.",
+                        canForce = true,
+                        suggestion = "Tắt phục vụ để ẩn khỏi menu"
+                    });
+                }
+                else
+                {
+                    // force=true → soft delete: tắt phục vụ thay vì xóa
+                    food.IsAvailable = false;
+                    await _context.SaveChangesAsync();
+                    return Ok(new
+                    {
+                        message = "Món ăn đã được ẩn khỏi menu (tắt phục vụ) vì đã có trong lịch sử đơn hàng.",
+                        softDeleted = true,
+                        isAvailable = false
+                    });
+                }
+            }
+
+            // Không có trong đơn hàng → xóa hẳn
             _context.Foods.Remove(food);
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Xóa món ăn thành công" });
+            return Ok(new { message = "Xóa món ăn thành công", softDeleted = false });
         }
     }
 }

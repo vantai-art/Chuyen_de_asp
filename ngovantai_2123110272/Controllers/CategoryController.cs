@@ -76,19 +76,101 @@ namespace RestaurantAPI.Controllers
             return Ok(new { message = "Cập nhật thành công", category });
         }
 
-        // DELETE: api/category/{id}  (Admin only)
+        // DELETE: api/category/{id}?force=true  (Admin only)
+        // - Không có món → xóa hẳn
+        // - Có món, không có trong đơn hàng nào (force=false) → trả 409 gợi ý
+        // - force=true → xóa hết món rồi xóa danh mục (nếu món chưa có trong đơn hàng)
+        //               hoặc tắt phục vụ các món đã có trong đơn hàng rồi xóa danh mục
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> DeleteCategory(int id)
+        public async Task<ActionResult> DeleteCategory(int id, [FromQuery] bool force = false)
         {
-            var category = await _context.Categories.Include(c => c.Foods).FirstOrDefaultAsync(c => c.Id == id);
-            if (category == null) return NotFound(new { message = "Không tìm thấy danh mục" });
-            if (category.Foods != null && category.Foods.Any())
-                return BadRequest(new { message = "Không thể xóa vì danh mục đang có món ăn" });
+            var category = await _context.Categories
+                .Include(c => c.Foods)
+                .FirstOrDefaultAsync(c => c.Id == id);
 
+            if (category == null)
+                return NotFound(new { message = "Không tìm thấy danh mục" });
+
+            var foods = category.Foods ?? new List<Food>();
+            int foodCount = foods.Count;
+
+            if (foodCount == 0)
+            {
+                // Không có món → xóa thẳng
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Xóa danh mục thành công" });
+            }
+
+            // Có món trong danh mục
+            if (!force)
+            {
+                return Conflict(new
+                {
+                    message = $"Danh mục đang có {foodCount} món ăn.",
+                    foodCount,
+                    canForce = true,
+                    suggestion = "Xóa hết món trong danh mục rồi xóa danh mục"
+                });
+            }
+
+            // force=true: xóa hoặc tắt phục vụ từng món, rồi xóa danh mục
+            var foodIds = foods.Select(f => f.Id).ToList();
+
+            // Kiểm tra món nào đã có trong OrderDetails
+            var foodsInOrders = await _context.OrderDetails
+                .Where(od => foodIds.Contains(od.FoodId))
+                .Select(od => od.FoodId)
+                .Distinct()
+                .ToListAsync();
+
+            int softDeleted = 0;
+            int hardDeleted = 0;
+
+            foreach (var food in foods)
+            {
+                if (foodsInOrders.Contains(food.Id))
+                {
+                    // Đã có trong đơn hàng → tắt phục vụ thay vì xóa
+                    food.IsAvailable = false;
+                    // Chuyển sang danh mục mặc định (ID=1) hoặc không cần vì sẽ bị ẩn
+                    softDeleted++;
+                }
+                else
+                {
+                    // Chưa có trong đơn hàng → xóa hẳn
+                    _context.Foods.Remove(food);
+                    hardDeleted++;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Nếu còn món soft-deleted thì không xóa được danh mục (FK constraint)
+            // → Gán các món đó về danh mục khác (nếu có) hoặc giữ nguyên danh mục
+            var remainingFoods = await _context.Foods.AnyAsync(f => f.CategoryId == id);
+            if (remainingFoods)
+            {
+                return Ok(new
+                {
+                    message = $"Đã xóa {hardDeleted} món. {softDeleted} món đã có trong lịch sử đơn hàng được ẩn khỏi menu. Danh mục vẫn giữ lại để lưu lịch sử.",
+                    categoryDeleted = false,
+                    hardDeleted,
+                    softDeleted
+                });
+            }
+
+            // Tất cả món đã xóa hết → xóa danh mục
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Xóa danh mục thành công" });
+            return Ok(new
+            {
+                message = $"Đã xóa danh mục và {hardDeleted} món ăn thành công.",
+                categoryDeleted = true,
+                hardDeleted,
+                softDeleted
+            });
         }
     }
 }
