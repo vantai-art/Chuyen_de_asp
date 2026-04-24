@@ -145,8 +145,8 @@ namespace RestaurantAPI.Data
 
             // ===== SEED DATA =====
             //modelBuilder.Entity<User>().HasData(
-            //    new User { Id = 1, Username = "admin", PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"), Role = "Admin", FullName = "Quản trị viên", CreatedAt = new DateTime(2025, 1, 1), IsActive = true },
-            //    new User { Id = 2, Username = "staff1", PasswordHash = BCrypt.Net.BCrypt.HashPassword("staff123"), Role = "Staff", FullName = "Nhân viên 1", CreatedAt = new DateTime(2025, 1, 1), IsActive = true }
+            //    new User { Id = 1, Username = "admin", PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"), Role = "Admin", FullName = "Quản trị viên", CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc), IsActive = true },
+            //    new User { Id = 2, Username = "staff1", PasswordHash = BCrypt.Net.BCrypt.HashPassword("staff123"), Role = "Staff", FullName = "Nhân viên 1", CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc), IsActive = true }
             //);
 
             modelBuilder.Entity<Category>().HasData(
@@ -192,10 +192,10 @@ namespace RestaurantAPI.Data
                     MaxDiscountAmount = 50000,
                     UsageLimit = 100,
                     UsageCount = 0,
-                    StartDate = new DateTime(2025, 1, 1),
-                    EndDate = new DateTime(2026, 12, 31),
+                    StartDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                    EndDate = new DateTime(2026, 12, 31, 0, 0, 0, DateTimeKind.Utc),
                     IsActive = true,
-                    CreatedAt = new DateTime(2025, 1, 1)
+                    CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new Promotion
                 {
@@ -209,10 +209,10 @@ namespace RestaurantAPI.Data
                     MaxDiscountAmount = null,
                     UsageLimit = 50,
                     UsageCount = 0,
-                    StartDate = new DateTime(2025, 1, 1),
-                    EndDate = new DateTime(2026, 12, 31),
+                    StartDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                    EndDate = new DateTime(2026, 12, 31, 0, 0, 0, DateTimeKind.Utc),
                     IsActive = true,
-                    CreatedAt = new DateTime(2025, 1, 1)
+                    CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)
                 }
             );
         }

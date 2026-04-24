@@ -5,6 +5,10 @@ using Microsoft.OpenApi.Models;
 using RestaurantAPI.Data;
 using System.Text;
 
+// Bắt buộc với Npgsql + PostgreSQL: tất cả DateTime phải là UTC
+// Đặt TRƯỚC mọi thứ khác
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", false);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Database connection

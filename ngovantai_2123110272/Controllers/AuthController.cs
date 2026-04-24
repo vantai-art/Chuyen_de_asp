@@ -52,7 +52,8 @@ namespace RestaurantAPI.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Login error: " + ex.Message);
+                var inner = ex.InnerException?.Message ?? "";
+                Console.WriteLine("Login error: " + ex.Message + " | Inner: " + inner);
                 return StatusCode(500, new { message = "Lỗi server, vui lòng thử lại." });
             }
         }
@@ -87,7 +88,7 @@ namespace RestaurantAPI.Controllers
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                     Role = role,
                     FullName = dto.FullName,
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     IsActive = true
                 };
 
@@ -103,8 +104,9 @@ namespace RestaurantAPI.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Register error: " + ex.Message);
-                return StatusCode(500, new { message = "Lỗi server khi đăng ký: " + ex.Message });
+                var inner = ex.InnerException?.Message ?? "";
+                Console.WriteLine("Register error: " + ex.Message + " | Inner: " + inner);
+                return StatusCode(500, new { message = "Lỗi server khi đăng ký: " + (inner != "" ? inner : ex.Message) });
             }
         }
 
@@ -125,7 +127,7 @@ namespace RestaurantAPI.Controllers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 Role = dto.Role == "Admin" ? "Admin" : "Staff",
                 FullName = dto.FullName,
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 IsActive = true
             };
 
@@ -229,7 +231,7 @@ namespace RestaurantAPI.Controllers
                 issuer: string.IsNullOrEmpty(jwtIssuer) ? null : jwtIssuer,
                 audience: string.IsNullOrEmpty(jwtAudience) ? null : jwtAudience,
                 claims: claims,
-                expires: DateTime.Now.AddHours(8),
+                expires: DateTime.UtcNow.AddHours(8),
                 signingCredentials: creds
             );
 
