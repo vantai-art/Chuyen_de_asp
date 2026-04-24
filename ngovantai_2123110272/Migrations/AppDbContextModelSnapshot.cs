@@ -433,16 +433,16 @@ namespace RestaurantAPI.Migrations
                     {
                         Id = 1,
                         Code = "WELCOME10",
-                        CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                         Description = "Giảm 10% cho lần đầu tiên, đơn từ 100.000đ",
                         DiscountType = "Percent",
                         DiscountValue = 10m,
-                        EndDate = new DateTime(2026, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        EndDate = new DateTime(2026, 12, 31, 0, 0, 0, 0, DateTimeKind.Utc),
                         IsActive = true,
                         MaxDiscountAmount = 50000m,
                         MinOrderAmount = 100000m,
                         Name = "Chào mừng khách mới",
-                        StartDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        StartDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                         UsageCount = 0,
                         UsageLimit = 100
                     },
@@ -450,15 +450,15 @@ namespace RestaurantAPI.Migrations
                     {
                         Id = 2,
                         Code = "GIAM50K",
-                        CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                         Description = "Giảm thẳng 50.000đ cho đơn từ 300.000đ",
                         DiscountType = "Fixed",
                         DiscountValue = 50000m,
-                        EndDate = new DateTime(2026, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        EndDate = new DateTime(2026, 12, 31, 0, 0, 0, 0, DateTimeKind.Utc),
                         IsActive = true,
                         MinOrderAmount = 300000m,
                         Name = "Giảm 50.000đ cuối tuần",
-                        StartDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                        StartDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                         UsageCount = 0,
                         UsageLimit = 50
                     });
@@ -716,27 +716,7 @@ namespace RestaurantAPI.Migrations
 
                 b.ToTable("Users");
 
-                b.HasData(
-                    new
-                    {
-                        Id = 1,
-                        CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                        FullName = "Quản trị viên",
-                        IsActive = true,
-                        PasswordHash = "$2a$11$d5JHFrSkR1cdQ7bi0EqPkevExYeE0EOUbtlb3CgyTBdeb9eFrQreO",
-                        Role = "Admin",
-                        Username = "admin"
-                    },
-                    new
-                    {
-                        Id = 2,
-                        CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                        FullName = "Nhân viên 1",
-                        IsActive = true,
-                        PasswordHash = "$2a$11$UXui1/MPKZKCM0A0WQq7buFL3VsxXyqeFeos/Yi8TBFA1QF3RDllm",
-                        Role = "Staff",
-                        Username = "staff1"
-                    });
+                ;
             });
 
             modelBuilder.Entity("RestaurantAPI.Models.Food", b =>

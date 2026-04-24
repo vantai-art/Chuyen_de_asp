@@ -308,8 +308,8 @@ namespace RestaurantAPI.Migrations
                 columns: new[] { "Id", "Code", "CreatedAt", "Description", "DiscountType", "DiscountValue", "EndDate", "IsActive", "MaxDiscountAmount", "MinOrderAmount", "Name", "StartDate", "UsageCount", "UsageLimit" },
                 values: new object[,]
                 {
-                    { 1, "WELCOME10", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Giảm 10% cho lần đầu tiên, đơn từ 100.000đ", "Percent", 10m, new DateTime(2026, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), true, 50000m, 100000m, "Chào mừng khách mới", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 0, 100 },
-                    { 2, "GIAM50K", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Giảm thẳng 50.000đ cho đơn từ 300.000đ", "Fixed", 50000m, new DateTime(2026, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), true, null, 300000m, "Giảm 50.000đ cuối tuần", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 0, 50 }
+                    { 1, "WELCOME10", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Giảm 10% cho lần đầu tiên, đơn từ 100.000đ", "Percent", 10m, new DateTime(2026, 12, 31, 0, 0, 0, 0, DateTimeKind.Utc), true, 50000m, 100000m, "Chào mừng khách mới", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 0, 100 },
+                    { 2, "GIAM50K", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Giảm thẳng 50.000đ cho đơn từ 300.000đ", "Fixed", 50000m, new DateTime(2026, 12, 31, 0, 0, 0, 0, DateTimeKind.Utc), true, null, 300000m, "Giảm 50.000đ cuối tuần", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 0, 50 }
                 });
 
             migrationBuilder.InsertData(
@@ -332,8 +332,8 @@ namespace RestaurantAPI.Migrations
                 columns: new[] { "Id", "CreatedAt", "FullName", "IsActive", "PasswordHash", "Role", "Username" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Quản trị viên", true, "$2a$11$d5JHFrSkR1cdQ7bi0EqPkevExYeE0EOUbtlb3CgyTBdeb9eFrQreO", "Admin", "admin" },
-                    { 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Nhân viên 1", true, "$2a$11$UXui1/MPKZKCM0A0WQq7buFL3VsxXyqeFeos/Yi8TBFA1QF3RDllm", "Staff", "staff1" }
+                    { 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Quản trị viên", true, "$2a$11$d5JHFrSkR1cdQ7bi0EqPkevExYeE0EOUbtlb3CgyTBdeb9eFrQreO", "Admin", "admin" },
+                    { 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Nhân viên 1", true, "$2a$11$UXui1/MPKZKCM0A0WQq7buFL3VsxXyqeFeos/Yi8TBFA1QF3RDllm", "Staff", "staff1" }
                 });
 
             migrationBuilder.InsertData(
