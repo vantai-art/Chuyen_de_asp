@@ -101,7 +101,7 @@ namespace RestaurantAPI.Controllers
                 CustomerName = dto.CustomerName,
                 Rating = dto.Rating,
                 Comment = dto.Comment,
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 IsVisible = true
             };
 
@@ -119,7 +119,7 @@ namespace RestaurantAPI.Controllers
             if (review == null) return NotFound(new { message = "Không tìm thấy đánh giá" });
 
             review.ReplyComment = dto.ReplyComment;
-            review.ReplyAt = DateTime.Now;
+            review.ReplyAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             return Ok(new { message = "Phản hồi thành công", review });
         }

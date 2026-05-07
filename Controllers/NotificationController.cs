@@ -82,7 +82,7 @@ namespace RestaurantAPI.Controllers
                 Message = dto.Message,
                 Type = "System",
                 UserId = null,  // null = gửi cho tất cả
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Notifications.Add(notification);

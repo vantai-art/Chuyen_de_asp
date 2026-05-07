@@ -85,7 +85,7 @@ namespace RestaurantAPI.Controllers
                 StaffId = staffId,
                 Note = dto.Note,
                 Status = "Pending",
-                OrderDate = DateTime.Now
+                OrderDate = DateTime.UtcNow
             };
 
             _context.Orders.Add(order);
@@ -181,7 +181,7 @@ namespace RestaurantAPI.Controllers
 
         private async Task<string> GenerateOrderCode()
         {
-            var date = DateTime.Now.ToString("yyyyMMdd");
+            var date = DateTime.UtcNow.ToString("yyyyMMdd");
             var count = await _context.Orders.CountAsync(o => o.OrderCode.StartsWith($"HD{date}")) + 1;
             return $"HD{date}{count:D4}";
         }

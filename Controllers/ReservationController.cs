@@ -57,7 +57,7 @@ namespace RestaurantAPI.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             // Kiểm tra ngày giờ hợp lệ (phải đặt trước ít nhất 30 phút)
-            if (dto.ReservationDate <= DateTime.Now.AddMinutes(30))
+            if (dto.ReservationDate <= DateTime.UtcNow.AddMinutes(30))
                 return BadRequest(new { message = "Phải đặt bàn trước ít nhất 30 phút" });
 
             // Kiểm tra bàn còn trống không (nếu chọn bàn cụ thể)
@@ -87,7 +87,7 @@ namespace RestaurantAPI.Controllers
                 TableId = dto.TableId,
                 Note = dto.Note,
                 Status = "Pending",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Reservations.Add(reservation);

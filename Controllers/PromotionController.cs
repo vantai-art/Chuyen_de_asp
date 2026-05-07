@@ -18,7 +18,7 @@ namespace RestaurantAPI.Controllers
         [HttpGet]
         public async Task<ActionResult> GetPromotions()
         {
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var promotions = await _context.Promotions
                 .Where(p => p.IsActive && p.StartDate <= now && p.EndDate >= now)
                 .OrderBy(p => p.EndDate)
@@ -43,7 +43,7 @@ namespace RestaurantAPI.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var promo = await _context.Promotions
                 .FirstOrDefaultAsync(p =>
                     p.Code.ToUpper() == dto.Code.ToUpper() &&
@@ -111,7 +111,7 @@ namespace RestaurantAPI.Controllers
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
                 IsActive = true,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Promotions.Add(promo);

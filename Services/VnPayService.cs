@@ -19,7 +19,7 @@ namespace RestaurantAPI.Services
             var hashSecret = Environment.GetEnvironmentVariable("VNPAY_HASH_SECRET") ?? _config["VnPay:HashSecret"] ?? "30F753TNRCBSBBHZ8XUWT05V3UP84VSN";
             var vnpUrl = Environment.GetEnvironmentVariable("VNPAY_URL") ?? _config["VnPay:Url"] ?? "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
-            var now = DateTime.UtcNow.AddHours(7); // Vietnam time (UTC+7)
+            var now = DateTime.UtcNow.AddHours(7); // Vietnam time
             var txnRef = $"{orderId}_{now:yyyyMMddHHmmss}";
 
             var vnpParams = new SortedDictionary<string, string>
@@ -39,14 +39,12 @@ namespace RestaurantAPI.Services
                 ["vnp_ExpireDate"] = now.AddMinutes(15).ToString("yyyyMMddHHmmss"),
             };
 
-            // VNPAY chuẩn: key KHÔNG encode, chỉ encode value khi ký
-            var signData = BuildSignData(vnpParams);
-            var secureHash = HmacSha512(hashSecret, signData);
+            var query = string.Join("&", vnpParams.Select(kv =>
+                $"{WebUtility.UrlEncode(kv.Key)}={WebUtility.UrlEncode(kv.Value)}"));
 
-            // Khi ghép URL thì encode cả key lẫn value
-            var queryString = BuildQueryString(vnpParams);
+            var secureHash = HmacSha512(hashSecret, query);
 
-            return $"{vnpUrl}?{queryString}&vnp_SecureHash={secureHash}";
+            return $"{vnpUrl}?{query}&vnp_SecureHash={secureHash}";
         }
 
         public bool ValidateSignature(IQueryCollection query, out string txnRef, out string responseCode, out long amount)
@@ -56,8 +54,7 @@ namespace RestaurantAPI.Services
             long.TryParse(query["vnp_Amount"].ToString(), out amount);
 
             var hashSecret = Environment.GetEnvironmentVariable("VNPAY_HASH_SECRET")
-                          ?? _config["VnPay:HashSecret"]
-                          ?? "30F753TNRCBSBBHZ8XUWT05V3UP84VSN";
+                ?? _config["VnPay:HashSecret"] ?? "30F753TNRCBSBBHZ8XUWT05V3UP84VSN";
 
             var secureHash = query["vnp_SecureHash"].ToString();
 
@@ -68,21 +65,13 @@ namespace RestaurantAPI.Services
                     sortedParams[key] = query[key].ToString();
             }
 
-            // Ký theo cùng cách với CreatePaymentUrl: key không encode, value encode
-            var signData = BuildSignData(sortedParams);
+            var signData = string.Join("&", sortedParams.Select(kv =>
+                $"{WebUtility.UrlEncode(kv.Key)}={WebUtility.UrlEncode(kv.Value)}"));
+
             var expectedHash = HmacSha512(hashSecret, signData);
 
             return string.Equals(expectedHash, secureHash, StringComparison.OrdinalIgnoreCase);
         }
-
-        /// key=UrlEncode(value) — đúng chuẩn VNPAY dùng để ký
-        private static string BuildSignData(SortedDictionary<string, string> dict)
-            => string.Join("&", dict.Select(kv => $"{kv.Key}={WebUtility.UrlEncode(kv.Value)}"));
-
-        /// UrlEncode(key)=UrlEncode(value) — dùng để ghép query URL
-        private static string BuildQueryString(SortedDictionary<string, string> dict)
-            => string.Join("&", dict.Select(kv =>
-                $"{WebUtility.UrlEncode(kv.Key)}={WebUtility.UrlEncode(kv.Value)}"));
 
         private static string HmacSha512(string key, string data)
         {

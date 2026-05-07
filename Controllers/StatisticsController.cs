@@ -50,7 +50,7 @@ namespace RestaurantAPI.Controllers
         [HttpGet("revenue")]
         public async Task<ActionResult> GetMonthlyRevenue([FromQuery] int year, [FromQuery] int? month)
         {
-            if (year == 0) year = DateTime.Now.Year;
+            if (year == 0) year = DateTime.UtcNow.Year;
 
             if (month.HasValue)
             {
