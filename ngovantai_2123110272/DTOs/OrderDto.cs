@@ -45,4 +45,17 @@ namespace RestaurantAPI.DTOs
         [StringLength(200)]
         public string? Note { get; set; }
     }
+
+    public class CreateVnPayDto
+    {
+        [Required]
+        public int OrderId { get; set; }
+
+        /// <summary>
+        /// URL frontend muốn VNPAY redirect về sau khi thanh toán xong.
+        /// Ví dụ: https://yourfrontend.com/payment/result
+        /// </summary>
+        [Required]
+        public string ReturnUrl { get; set; } = string.Empty;
+    }
 }
