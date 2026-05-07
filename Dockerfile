@@ -5,11 +5,11 @@ EXPOSE 10000
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-COPY ["ngovantai_2123110272/ngovantai_2123110272.csproj", "ngovantai_2123110272/"]
-RUN dotnet restore "ngovantai_2123110272/ngovantai_2123110272.csproj"
+COPY ["ngovantai_2123110272.csproj", "./"]
+RUN dotnet restore "ngovantai_2123110272.csproj"
 
 COPY . .
-WORKDIR "/src/ngovantai_2123110272"
+WORKDIR "/src"
 RUN dotnet build "ngovantai_2123110272.csproj" -c Release -o /app/build
 
 FROM build AS publish
