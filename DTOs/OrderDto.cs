@@ -45,4 +45,10 @@ namespace RestaurantAPI.DTOs
         [StringLength(200)]
         public string? Note { get; set; }
     }
+
+    public class CreateVnPayDto
+    {
+        public int OrderId { get; set; }
+        public string ReturnUrl { get; set; } = string.Empty;
+    }
 }
