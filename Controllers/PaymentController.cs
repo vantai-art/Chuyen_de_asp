@@ -85,7 +85,13 @@ namespace RestaurantAPI.Controllers
             if (order == null) return NotFound(new { message = "Không tìm thấy đơn hàng" });
             if (order.Payment != null) return BadRequest(new { message = "Đơn hàng đã được thanh toán" });
             if (order.Status == "Cancelled") return BadRequest(new { message = "Đơn hàng đã bị hủy" });
-            if (order.Status == "Pending") return BadRequest(new { message = "Đơn hàng chưa được xác nhận" });
+
+            // Auto-confirm order nếu còn Pending (staff thanh toán ngay sau khi tạo đơn)
+            if (order.Status == "Pending")
+            {
+                order.Status = "Confirmed";
+                await _context.SaveChangesAsync();
+            }
 
             var ipAddr = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
             if (ipAddr == "::1") ipAddr = "127.0.0.1";
